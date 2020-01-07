@@ -12,8 +12,8 @@ const Timer: React.FC = () => {
     const center = size / 2;
     const strokeWidth = 10;
     const radius = center - strokeWidth / 2;
-    const [angle, setAngle] = useState(180);
-    const [draw, setDraw] = useState(``);
+    const [angle, setAngle] = useState(180); // 기본각도
+    const [draw, setDraw] = useState(``); // path d 값
 
     const radians = (degrees: number) => {
         return degrees / 180 * Math.PI;
@@ -23,14 +23,14 @@ const Timer: React.FC = () => {
         const getArc = (angle: number) => {
             const x = center + radius * Math.cos(radians(angle));
             const y = center + radius * Math.sin(radians(angle));
-            return `A${radius},${radius} 1 0 1 ${x},${y}`;
+            return `A${radius},${radius} 1 0 1 ${x},${y}`; // 곡선
         };
-        const firstAngle = angle > 180 ? 90 : angle - 90;
-        const secondAngle = -270 + angle - 180;
-        const firstArc = getArc(firstAngle);
-        const secondArc = angle > 180 ? getArc(secondAngle) : '';
-        const start = `M${center},${center} m0,-${center - strokeWidth / 2}`;
-        const d = `${start} ${firstArc} ${secondArc}`;
+        const firstAngle = angle > 180 ? 90 : angle - 90; // 왼쪽 각도
+        const secondAngle = -270 + angle - 180; // 오른쪽 각도
+        const firstArc = getArc(firstAngle); // 왼쪽 반원
+        const secondArc = angle > 180 ? getArc(secondAngle) : ''; // 오른쪽 반원
+        const start = `M${center},${center} m0,-${center - strokeWidth / 2}`; // 시작점
+        const d = `${start} ${firstArc} ${secondArc}`; // 시작점 왼쪽 반원 오른쪽 반원 그리는 값
         setDraw(d);
         setAngle(angle);
     }
