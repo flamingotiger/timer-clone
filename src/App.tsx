@@ -66,6 +66,9 @@ const Button = styled.button`
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    &:last-of-type {
+      background-color: rgb(222,116,51);
+    }
 `
 
 const App: React.FC = () => {
