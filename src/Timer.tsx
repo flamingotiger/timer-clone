@@ -13,7 +13,7 @@ const Timer: React.FC<{ timer: Duration, defaultTime: number }> = ({timer, defau
     const center = size / 2;
     const strokeWidth = 10;
     const radius = center - strokeWidth / 2;
-    const [angle, setAngle] = useState(180); // 기본각도
+    const [angle, setAngle] = useState(360); // 기본각도
     const [draw, setDraw] = useState(``); // path d 값
 
     const radians = (degrees: number) => {
@@ -21,8 +21,12 @@ const Timer: React.FC<{ timer: Duration, defaultTime: number }> = ({timer, defau
     };
 
     React.useEffect(() => {
-
-    }, [timer])
+        if (timer.asMilliseconds() >= 0) {
+            const percent = timer.asMilliseconds() / defaultTime;
+            const angle = 360 * percent;
+            setAngle(angle);
+        }
+    }, [timer, defaultTime])
 
     useEffect(() => {
         const drawPath = (angle: number) => {
