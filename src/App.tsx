@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Timer from './Timer';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronLeft, faCheck, faPause } from '@fortawesome/free-solid-svg-icons'
+import { faChevronLeft, faRedoAlt, faPause, faPlay } from '@fortawesome/free-solid-svg-icons'
+import moment from 'moment';
+import { clearInterval, setInterval } from 'timers';
 
 const TimerWrapper = styled.div`
     width: 440px;
@@ -72,28 +74,76 @@ const Button = styled.button`
 `
 
 const App: React.FC = () => {
-  return (
-    <TimerWrapper>
-      <TimerDisplay>
-        <TimerHeader>
-          <BackButton>
-            <FontAwesomeIcon icon={faChevronLeft} color="rgb(106,106,106)" size="sm"/> 
-            <BackText>Back</BackText>
-          </BackButton>
-          <CurrentTime>10:00</CurrentTime>
-        </TimerHeader>
-        <Timer />
-        <ButtonsWrapper>
-          <Button type="button">
-            <FontAwesomeIcon icon={faPause} color="#fff" size="lg"/> 
-          </Button>
-          <Button type="button">
-            <FontAwesomeIcon icon={faCheck} color="#fff" size="lg"/> 
-          </Button>
-        </ButtonsWrapper>
-      </TimerDisplay>
-    </TimerWrapper>
-  );
+    const defaultTime = 180000; // 1000 * 60 * 3 = 3분
+    const [timer, setTimer] = useState(moment.duration(defaultTime));
+    const [timerStatus, setTimerStatus] = useState<'play' | 'pause' | 'stop'>('stop');
+    const [currentTime, setCurrentTime] = useState(moment());
+
+    useEffect(() => {
+        const currentTimer:NodeJS.Timeout = setInterval(() => {
+            setCurrentTime(prevCurrentTime => prevCurrentTime.clone().add(1, 'minute'));
+        }, 60000);
+        return () => {
+            clearInterval(currentTimer);
+        }
+    }, []);
+
+    useEffect(() => {
+        let timerInterval: NodeJS.Timeout | null = null;
+        if (timerStatus === 'play') {
+            timerInterval = setInterval(() => {
+                setTimer(prevTimer => {
+                        const duration = prevTimer.clone().subtract(1, 'second');
+                        if (prevTimer.asMilliseconds() === 0) {
+                            setTimerStatus('stop');
+                            return moment.duration(0);
+                        }
+                        return duration;
+                    }
+                )
+            }, 1000);
+        } else if (timerStatus === 'pause' || timerStatus === 'stop') {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+        }
+        return () => {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+        }
+    }, [timerStatus]);
+
+    const timerControl = () => {
+        if (timerStatus === 'play') {
+            setTimerStatus('pause');
+        } else {
+            setTimerStatus('play');
+        }
+    }
+
+    return (
+        <TimerWrapper>
+            <TimerDisplay>
+                <TimerHeader>
+                    <BackButton>
+                        <FontAwesomeIcon icon={faChevronLeft} color="rgb(106,106,106)" size="sm"/>
+                        <BackText>Back</BackText>
+                    </BackButton>
+                    <CurrentTime>{currentTime.format('HH:mm')}</CurrentTime>
+                </TimerHeader>
+                <Timer timer={timer} defaultTime={defaultTime}/>
+                <ButtonsWrapper>
+                    <Button type="button" onClick={() => timerControl()}>
+                        <FontAwesomeIcon icon={timerStatus === 'play' ? faPause : faPlay} color="#fff" size="lg"/>
+                    </Button>
+                    <Button type="button">
+                        <FontAwesomeIcon icon={faRedoAlt} color="#fff" size="lg"/>
+                    </Button>
+                </ButtonsWrapper>
+            </TimerDisplay>
+        </TimerWrapper>
+    );
 }
 
 export default App;

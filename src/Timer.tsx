@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import moment, { Duration } from 'moment';
 
 const TimerStyle = styled.div`
     position: relative;
@@ -7,7 +8,7 @@ const TimerStyle = styled.div`
 const SvgWrapper = styled.svg`
     transform: scale(0.85);
 `
-const Timer: React.FC = () => {
+const Timer: React.FC<{ timer: Duration, defaultTime: number }> = ({timer, defaultTime}) => {
     const size = 100;
     const center = size / 2;
     const strokeWidth = 10;
@@ -18,6 +19,10 @@ const Timer: React.FC = () => {
     const radians = (degrees: number) => {
         return degrees / 180 * Math.PI;
     };
+
+    React.useEffect(() => {
+
+    }, [timer])
 
     useEffect(() => {
         const drawPath = (angle: number) => {
@@ -56,7 +61,8 @@ const Timer: React.FC = () => {
                 d={draw}
             />
             <text x={center - 25} y={center + 2} fill="#fff" fontSize="20" fontWeight="900"
-                  style={{userSelect: 'none'}}>02:35
+                  style={{userSelect: 'none'}}>
+                {moment.utc(timer.asMilliseconds()).format('mm:ss')}
             </text>
             <text x={center - 20} y={center + 15} fill="rgb(108,108,108)" fontSize="8"
                   style={{userSelect: 'none'}}>Watch Timer
