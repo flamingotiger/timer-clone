@@ -8,12 +8,15 @@ const TimerStyle = styled.div`
 const SvgWrapper = styled.svg`
     transform: scale(0.85);
 `
+
 const Timer: React.FC<{ timer: Duration, defaultTime: number }> = ({timer, defaultTime}) => {
     const size = 100;
     const center = size / 2;
     const strokeWidth = 10;
     const radius = center - strokeWidth / 2;
     const [angle, setAngle] = useState(360); // 기본각도
+    const animDuration = 300; // 애니메이션 속도
+    const [prevAngle, setPrevAngle] = useState(angle); // 애니메이션 시작 이전 각도
     const [draw, setDraw] = useState(``); // path d 값
 
     const radians = (degrees: number) => {
@@ -24,7 +27,7 @@ const Timer: React.FC<{ timer: Duration, defaultTime: number }> = ({timer, defau
         if (timer.asMilliseconds() >= 0) {
             const percent = timer.asMilliseconds() / defaultTime;
             const angle = 360 * percent;
-            setAngle(angle);
+            setPrevAngle(angle);
         }
     }, [timer, defaultTime])
 
@@ -44,8 +47,30 @@ const Timer: React.FC<{ timer: Duration, defaultTime: number }> = ({timer, defau
             setDraw(d);
             setAngle(angle);
         }
-        drawPath(angle);
-    }, [angle, center, radius]);
+
+        const step = (angleOffset: number, argAngle: number, time: number, endTime: number) => {
+            const now = new Date().valueOf(); // 애니메이션 시작 시간
+            const timeOffset = endTime - now; // 끝나는 시간 - 시작 시간
+            if (timeOffset <= 0) { // 끝나는 시간이 지났을때
+                drawPath(argAngle);
+            } else {
+                const incrementAngle = argAngle - (angleOffset * timeOffset / time); // 이전각도 - (이전각도 - 현재각도) * (끝나는 시간 - 시작 시간) / 애니메이션 시간
+                drawPath(incrementAngle); // path를 그려줍니다.
+                requestAnimationFrame(() => step(angleOffset, argAngle, time, endTime)); // 끝나는 시간이 지날때까지 step을 계속 실행시킵니다.
+            }
+        }
+
+        const anim = (argAngle: number, time: number) => {
+            if (argAngle > 360) { // 각도가 360도를 넘어가면 360도의 나머지 값으로 계산합니다
+                argAngle = argAngle % 360;
+            }
+            const startTime = new Date().valueOf(); // 시작시간
+            const endTime = startTime + time; // 끝나는 시간
+            const angleOffset = argAngle - angle; // 이전각도와 현재각도 비교
+            requestAnimationFrame(() => step(angleOffset, argAngle, time, endTime));
+        }
+        anim(prevAngle, animDuration);
+    }, [prevAngle, animDuration]);
 
     return <TimerStyle>
         <SvgWrapper viewBox={`0 0 ${size} ${size}`}>
@@ -64,7 +89,7 @@ const Timer: React.FC<{ timer: Duration, defaultTime: number }> = ({timer, defau
                 fill='none'
                 d={draw}
             />
-            <text x={center - 25} y={center + 2} fill="#fff" fontSize="20" fontWeight="900"
+            <text x={center - 28} y={center + 2} fill="#fff" fontSize="20" fontWeight="900"
                   style={{userSelect: 'none'}}>
                 {moment.utc(timer.asMilliseconds()).format('mm:ss')}
             </text>

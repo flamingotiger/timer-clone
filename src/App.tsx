@@ -80,7 +80,7 @@ const App: React.FC = () => {
     const [currentTime, setCurrentTime] = useState(moment());
 
     useEffect(() => {
-        const currentTimer:NodeJS.Timeout = setInterval(() => {
+        const currentTimer: NodeJS.Timeout = setInterval(() => {
             setCurrentTime(prevCurrentTime => prevCurrentTime.clone().add(1, 'minute'));
         }, 60000);
         return () => {
@@ -122,6 +122,10 @@ const App: React.FC = () => {
         }
     }
 
+    const timerReset = () => {
+        setTimerStatus('stop');
+        setTimer(moment.duration(defaultTime));
+    }
     return (
         <TimerWrapper>
             <TimerDisplay>
@@ -137,7 +141,7 @@ const App: React.FC = () => {
                     <Button type="button" onClick={() => timerControl()}>
                         <FontAwesomeIcon icon={timerStatus === 'play' ? faPause : faPlay} color="#fff" size="lg"/>
                     </Button>
-                    <Button type="button">
+                    <Button type="button" onClick={() => timerReset()}>
                         <FontAwesomeIcon icon={faRedoAlt} color="#fff" size="lg"/>
                     </Button>
                 </ButtonsWrapper>
